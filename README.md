@@ -12,8 +12,8 @@ Windows may show a SmartScreen warning because this community tester build is no
 
 - Local webcam face tracking
 - Automatic conversion to transparent PNG on upload
-- Optional AI Avatar Creator that generates rig-ready transparent PNGs
-- User-supplied OpenAI API key stored with Windows encryption
+- Free local AI Avatar Creator that generates rig-ready transparent PNGs
+- No API key, account, subscription, or per-image fee
 - Adjustable background-removal strength with feathered edges
 - Head movement, blink, mouth, and smoothing controls
 - Local avatar settings
@@ -54,6 +54,6 @@ The Android project targets API 36. A signed Google Play App Bundle requires a p
 
 The desktop studio bundles its tracking model locally. Exported OBS overlays load the tracking runtime from the internet.
 
-The optional AI Avatar Creator uses the OpenAI Image API on Windows and Android. Users provide their own API key and are responsible for charges on their API account. Prompts are sent only when **Create PNG** is pressed; webcam frames and uploaded artwork are never included. Windows uses operating-system encryption and Android uses Android Keystore encryption for saved keys. AI creation is currently disabled in the iOS edition until a secure native bridge is configured.
+The AI Avatar Creator runs locally on Windows and 64-bit Android. Its approximately 1.6 GB Stable Diffusion model downloads once on demand and is stored in the app's private data. Windows automatically tries Vulkan acceleration and falls back to CPU; Android uses an ARM64 CPU build for broad compatibility. Prompts, webcam frames, artwork, and generated images stay on the device. AI creation is not included in the iOS edition yet.
 
 See [STORE_RELEASE_CHECKLIST.md](STORE_RELEASE_CHECKLIST.md), [PRIVACY.md](PRIVACY.md), and [EULA.md](EULA.md) before publication.

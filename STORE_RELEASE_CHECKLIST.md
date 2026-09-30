@@ -12,7 +12,7 @@ The permanent Android package ID and Apple bundle ID are confirmed as `com.kingc
 - Windows MSIX packaging target with webcam capability and replaceable Partner Center identity
 - Privacy policy, EULA, proprietary licence, support URL, and listing copy
 - No analytics, advertisements, Avatar Forge accounts, or developer-operated cloud collection
-- Optional Windows AI generation disclosure: prompts go directly to OpenAI using the user's API key; camera frames and imported artwork are excluded
+- Local AI disclosure: the optional model downloads from Hugging Face; prompts, camera frames, imported artwork, and generated images stay on device
 
 ## Publisher must complete
 

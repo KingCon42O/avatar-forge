@@ -1,9 +1,9 @@
 const { contextBridge, ipcRenderer } = require("electron");
 
 contextBridge.exposeInMainWorld("avatarForgeAI", Object.freeze({
-  getKeyState: () => ipcRenderer.invoke("ai:get-key-state"),
-  saveKey: (key) => ipcRenderer.invoke("ai:save-key", String(key ?? "")),
-  clearKey: () => ipcRenderer.invoke("ai:clear-key"),
+  getState: () => ipcRenderer.invoke("ai:get-state"),
+  install: () => ipcRenderer.invoke("ai:install"),
+  onProgress: (callback) => ipcRenderer.on("ai:progress", (_event, value) => callback(value)),
   generate: (options) => ipcRenderer.invoke("ai:generate", {
     description: String(options?.description ?? ""),
     style: String(options?.style ?? ""),

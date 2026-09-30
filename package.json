@@ -1,15 +1,15 @@
 {
   "name": "avatar-forge-desktop",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "private": true,
   "description": "Portable webcam-tracked avatar studio for OBS and Streamlabs",
   "author": "KingCon42O",
   "main": "main.cjs",
   "scripts": {
     "start": "electron .",
-    "package": "electron-packager . \"Avatar Forge\" --platform=win32 --arch=x64 --out=release --overwrite --ignore=^/release$ --ignore=^/release-msix$ --ignore=^/android$ --ignore=^/ios$ --ignore=^/assets$ --ignore=^/store$ --ignore=^/node_modules$ --ignore=^/\\.git$",
+    "package": "electron-packager . \"Avatar Forge\" --platform=win32 --arch=x64 --out=release --overwrite --asar.unpackDir=native/windows --ignore=^/release$ --ignore=^/release-msix$ --ignore=^/android$ --ignore=^/ios$ --ignore=^/assets$ --ignore=^/store$ --ignore=^/third_party$ --ignore=^/node_modules$ --ignore=^/\\.git$",
     "package:msix": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/build-msix.ps1",
-    "test:ai": "node scripts/test-ai-avatar.cjs",
+    "test:ai": "node scripts/test-local-ai.cjs",
     "mobile:sync": "cap sync",
     "mobile:android": "cap open android",
     "mobile:ios": "cap open ios",
@@ -28,6 +28,7 @@
     "typescript": "5.9.3"
   },
   "build": {
+    "asarUnpack": ["native/windows/**/*"],
     "appId": "com.kingcon42o.avatarforge",
     "productName": "Avatar Forge",
     "directories": {
@@ -36,7 +37,8 @@
     },
     "files": [
       "app/**/*",
-      "ai-avatar.cjs",
+      "local-ai.cjs",
+      "native/windows/**/*",
       "main.cjs",
       "preload.cjs",
       "package.json"
