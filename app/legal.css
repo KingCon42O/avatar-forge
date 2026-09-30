@@ -1,0 +1,19 @@
+.legal {
+  position: fixed;
+  left: 14px;
+  bottom: 8px;
+  z-index: 20;
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  font-size: 11px;
+  color: #7e778b;
+}
+
+.legal a { color: #b9a8d0; text-decoration: none; }
+.legal a:hover { color: #fff; }
+
+@media (max-width: 720px) {
+  .legal { position: static; padding: 8px 14px 14px; background: #08070c; }
+  header { padding-top: max(12px, env(safe-area-inset-top)); }
+}

@@ -1,4 +1,6 @@
 allowBuilds:
   electron: true
+  sharp: true
 onlyBuiltDependencies:
   - electron
+  - sharp

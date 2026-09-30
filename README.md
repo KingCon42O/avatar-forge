@@ -1,6 +1,6 @@
 # Avatar Forge
 
-Avatar Forge is a Windows desktop tester for webcam-tracked 2D avatars. Upload an avatar image, map head movement, blinking, and mouth movement, then export a transparent HTML overlay for OBS or Streamlabs.
+Avatar Forge is a private, webcam-tracked 2D avatar studio for Windows, Android, and iOS. Upload an avatar image, automatically remove its background, map head movement, blinking, and mouth movement, and use the desktop edition to export a transparent HTML overlay for OBS or Streamlabs.
 
 ## Download
 
@@ -17,6 +17,8 @@ Windows may show a SmartScreen warning because this community tester build is no
 - Local avatar settings
 - Transparent OBS and Streamlabs browser-source export
 - No account required inside the desktop app
+- Native Android and iOS projects with on-device processing
+- Store privacy policy, permission disclosures, app icon, listing copy, and release checklist
 
 ## Development
 
@@ -32,4 +34,16 @@ Create a Windows package with:
 pnpm package
 ```
 
+Sync the native Android and iOS projects after web changes:
+
+```text
+pnpm mobile:sync
+```
+
+Open the Android project with `pnpm mobile:android` or the iOS project on macOS with `pnpm mobile:ios`.
+
+The Android project targets API 36. A signed Google Play App Bundle requires a private upload key. The iOS project requires macOS, Xcode, an Apple Developer team, and signing before TestFlight or App Store submission.
+
 The desktop studio bundles its tracking model locally. Exported OBS overlays load the tracking runtime from the internet.
+
+See [STORE_RELEASE_CHECKLIST.md](STORE_RELEASE_CHECKLIST.md), [PRIVACY.md](PRIVACY.md), and [EULA.md](EULA.md) before publication.

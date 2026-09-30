@@ -1,16 +1,26 @@
 {
   "name": "avatar-forge-desktop",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "private": true,
   "description": "Portable webcam-tracked avatar studio for OBS and Streamlabs",
   "main": "main.cjs",
   "scripts": {
     "start": "electron .",
-    "package": "electron-packager . \"Avatar Forge\" --platform=win32 --arch=x64 --out=release --overwrite --ignore=^/release$"
+    "package": "electron-packager . \"Avatar Forge\" --platform=win32 --arch=x64 --out=release --overwrite --ignore=^/release$ --ignore=^/android$ --ignore=^/ios$ --ignore=^/assets$ --ignore=^/store$ --ignore=^/node_modules$ --ignore=^/\\.git$",
+    "mobile:sync": "cap sync",
+    "mobile:android": "cap open android",
+    "mobile:ios": "cap open ios",
+    "mobile:assets": "capacitor-assets generate"
   },
   "devDependencies": {
+    "@capacitor/android": "8.5.2",
+    "@capacitor/assets": "3.0.5",
+    "@capacitor/cli": "8.5.2",
+    "@capacitor/core": "8.5.2",
+    "@capacitor/ios": "8.5.2",
     "@electron/asar": "3.4.1",
     "@electron/packager": "19.0.2",
-    "electron": "38.2.1"
+    "electron": "38.2.1",
+    "typescript": "5.9.3"
   }
 }
