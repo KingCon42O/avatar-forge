@@ -11,6 +11,8 @@ Windows may show a SmartScreen warning because this community tester build is no
 ## Features
 
 - Local webcam face tracking
+- Automatic conversion to transparent PNG on upload
+- Adjustable background-removal strength with feathered edges
 - Head movement, blink, mouth, and smoothing controls
 - Local avatar settings
 - Transparent OBS and Streamlabs browser-source export

@@ -5,8 +5,8 @@ const refs = {
   file: $("#file"), upload: $("#upload"), art: $("#art"), avatar: $("#avatar"), camera: $("#camera"), toggle: $("#toggle"),
   status: $("#status"), statusDot: $("#statusDot"), left: $("#leftLid"), right: $("#rightLid"), mouth: $("#mouth"), name: $("#name"), toast: $("#toast")
 };
-const ranges = { head: $("#head"), blink: $("#blink"), mouth: $("#mouthRange"), smoothing: $("#smoothing") };
-let imageData = refs.art.src, frame = 0, stream, tracker, lastVideoTime = -1;
+const ranges = { background: $("#background"), head: $("#head"), blink: $("#blink"), mouth: $("#mouthRange"), smoothing: $("#smoothing") };
+let imageData = refs.art.src, frame = 0, stream, tracker, lastVideoTime = -1, sourceFile, backgroundTimer;
 let current = { x: 0, y: 0, rotation: 0, scale: 1, jaw: 0, blinkL: 0, blinkR: 0 };
 
 function rig() { return Object.fromEntries(Object.entries(ranges).map(([key, input]) => [key, Number(input.value)])); }
@@ -15,11 +15,76 @@ function syncRanges() { for (const [key, input] of Object.entries(ranges)) { $(`
 syncRanges();
 
 refs.upload.addEventListener("click", () => refs.file.click());
-refs.file.addEventListener("change", () => {
-  const file = refs.file.files?.[0]; if (!file) return;
-  const reader = new FileReader();
-  reader.onload = () => { imageData = String(reader.result); refs.art.src = imageData; refs.name.value = file.name.replace(/\.[^.]+$/, ""); showToast("Avatar loaded"); };
-  reader.readAsDataURL(file);
+refs.file.addEventListener("change", async () => {
+  sourceFile = refs.file.files?.[0]; if (!sourceFile) return;
+  refs.name.value = sourceFile.name.replace(/\.[^.]+$/, "");
+  await processAvatar(sourceFile);
+});
+
+function colorDistance(data, offset, background) {
+  return Math.hypot(data[offset] - background.r, data[offset + 1] - background.g, data[offset + 2] - background.b);
+}
+
+function dominantBorderColor(data, width, height) {
+  const bins = new Map(), samples = [], step = Math.max(1, Math.floor(Math.min(width, height) / 160));
+  const add = (x, y) => {
+    const offset = (y * width + x) * 4;
+    if (data[offset + 3] < 220) return;
+    const key = `${data[offset] >> 4},${data[offset + 1] >> 4},${data[offset + 2] >> 4}`;
+    const sample = { r: data[offset], g: data[offset + 1], b: data[offset + 2] };
+    samples.push({ key, ...sample }); bins.set(key, (bins.get(key) ?? 0) + 1);
+  };
+  for (let x = 0; x < width; x += step) { add(x, 0); add(x, height - 1); }
+  for (let y = step; y < height - step; y += step) { add(0, y); add(width - 1, y); }
+  const winner = [...bins].sort((a, b) => b[1] - a[1])[0]?.[0];
+  const selected = samples.filter((sample) => sample.key === winner);
+  if (!selected.length) return { r: 255, g: 255, b: 255 };
+  return selected.reduce((sum, sample) => ({ r: sum.r + sample.r / selected.length, g: sum.g + sample.g / selected.length, b: sum.b + sample.b / selected.length }), { r: 0, g: 0, b: 0 });
+}
+
+async function transparentPng(file) {
+  const bitmap = await createImageBitmap(file), maxSize = 2048, scale = Math.min(1, maxSize / Math.max(bitmap.width, bitmap.height));
+  const width = Math.max(1, Math.round(bitmap.width * scale)), height = Math.max(1, Math.round(bitmap.height * scale));
+  const canvas = document.createElement("canvas"); canvas.width = width; canvas.height = height;
+  const context = canvas.getContext("2d", { willReadFrequently: true }); context.drawImage(bitmap, 0, 0, width, height); bitmap.close();
+  const pixels = context.getImageData(0, 0, width, height), data = pixels.data, total = width * height;
+  let transparentPixels = 0;
+  for (let offset = 3; offset < data.length; offset += 4) if (data[offset] < 245) transparentPixels++;
+  if (transparentPixels / total < .005) {
+    const background = dominantBorderColor(data, width, height), strength = Number(ranges.background.value), threshold = 18 + strength * .62, feather = 10 + strength * .3;
+    const visited = new Uint8Array(total), queue = new Int32Array(total); let start = 0, end = 0;
+    const enqueue = (index) => {
+      if (index < 0 || index >= total || visited[index]) return;
+      const offset = index * 4;
+      if (colorDistance(data, offset, background) > threshold + feather) return;
+      visited[index] = 1; queue[end++] = index;
+    };
+    for (let x = 0; x < width; x++) { enqueue(x); enqueue((height - 1) * width + x); }
+    for (let y = 1; y < height - 1; y++) { enqueue(y * width); enqueue(y * width + width - 1); }
+    while (start < end) {
+      const index = queue[start++], offset = index * 4, distance = colorDistance(data, offset, background);
+      data[offset + 3] = distance <= threshold ? 0 : Math.round(data[offset + 3] * Math.min(1, (distance - threshold) / feather));
+      const x = index % width;
+      if (x) enqueue(index - 1); if (x < width - 1) enqueue(index + 1); if (index >= width) enqueue(index - width); if (index < total - width) enqueue(index + width);
+    }
+    context.putImageData(pixels, 0, 0);
+  }
+  return canvas.toDataURL("image/png");
+}
+
+async function processAvatar(file) {
+  refs.upload.classList.add("processing"); refs.status.textContent = "Creating transparent PNG…";
+  try {
+    imageData = await transparentPng(file); refs.art.src = imageData; refs.status.textContent = "Transparent PNG ready"; showToast("Background removed — transparent PNG ready");
+  } catch (error) {
+    const reader = new FileReader(); imageData = await new Promise((resolve, reject) => { reader.onload = () => resolve(String(reader.result)); reader.onerror = reject; reader.readAsDataURL(file); });
+    refs.art.src = imageData; refs.status.textContent = "Avatar loaded"; showToast("Avatar loaded; background removal was unavailable"); console.error(error);
+  } finally { refs.upload.classList.remove("processing"); }
+}
+
+ranges.background.addEventListener("input", () => {
+  clearTimeout(backgroundTimer);
+  if (sourceFile) backgroundTimer = setTimeout(() => processAvatar(sourceFile), 280);
 });
 
 async function prepareTracker() {
@@ -73,7 +138,7 @@ function saveAvatar() {
   localStorage.setItem("avatar-forge-profile", JSON.stringify({ name: refs.name.value, image: imageData, rig: rig() })); showToast("Avatar saved on this computer");
 }
 $("#save").addEventListener("click", saveAvatar);
-try { const saved = JSON.parse(localStorage.getItem("avatar-forge-profile")); if (saved) { refs.name.value = saved.name; imageData = saved.image; refs.art.src = imageData; for (const key of Object.keys(ranges)) ranges[key].value = saved.rig[key]; syncRanges(); } } catch {}
+try { const saved = JSON.parse(localStorage.getItem("avatar-forge-profile")); if (saved) { refs.name.value = saved.name; imageData = saved.image; refs.art.src = imageData; for (const key of Object.keys(ranges)) if (saved.rig[key] !== undefined) ranges[key].value = saved.rig[key]; syncRanges(); } } catch {}
 
 function overlayHtml() {
   const config = JSON.stringify({ image: imageData, rig: rig() }).replaceAll("<", "\\u003c");
