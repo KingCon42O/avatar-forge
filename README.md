@@ -34,6 +34,12 @@ Create a Windows package with:
 pnpm package
 ```
 
+Create a Microsoft Store MSIX candidate with the Windows SDK installed:
+
+```text
+pnpm package:msix
+```
+
 Sync the native Android and iOS projects after web changes:
 
 ```text

@@ -3,10 +3,12 @@
   "version": "0.3.0",
   "private": true,
   "description": "Portable webcam-tracked avatar studio for OBS and Streamlabs",
+  "author": "KingCon42O",
   "main": "main.cjs",
   "scripts": {
     "start": "electron .",
     "package": "electron-packager . \"Avatar Forge\" --platform=win32 --arch=x64 --out=release --overwrite --ignore=^/release$ --ignore=^/android$ --ignore=^/ios$ --ignore=^/assets$ --ignore=^/store$ --ignore=^/node_modules$ --ignore=^/\\.git$",
+    "package:msix": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/build-msix.ps1",
     "mobile:sync": "cap sync",
     "mobile:android": "cap open android",
     "mobile:ios": "cap open ios",
@@ -21,6 +23,35 @@
     "@electron/asar": "3.4.1",
     "@electron/packager": "19.0.2",
     "electron": "38.2.1",
+    "electron-builder": "26.15.3",
     "typescript": "5.9.3"
+  },
+  "build": {
+    "appId": "com.kingcon42o.avatarforge",
+    "productName": "Avatar Forge",
+    "directories": {
+      "output": "release-msix",
+      "buildResources": "build"
+    },
+    "files": [
+      "app/**/*",
+      "main.cjs",
+      "package.json"
+    ],
+    "win": {
+      "target": "appx"
+    },
+    "appx": {
+      "artifactName": "Avatar-Forge-Windows-${version}-${arch}.msix",
+      "applicationId": "AvatarForge",
+      "identityName": "KingCon42O.AvatarForge",
+      "publisherDisplayName": "KingCon42O",
+      "displayName": "Avatar Forge",
+      "backgroundColor": "#08070c",
+      "languages": ["en-GB", "en-US"],
+      "capabilities": ["runFullTrust", "webcam"],
+      "minVersion": "10.0.17763.0",
+      "maxVersionTested": "10.0.26100.0"
+    }
   }
 }

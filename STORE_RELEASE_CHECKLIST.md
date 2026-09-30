@@ -9,6 +9,7 @@ The permanent Android package ID and Apple bundle ID are confirmed as `com.kingc
 - Camera and photo-library permission descriptions
 - Android target SDK 36 configuration
 - Store icon master and generated platform icon sets
+- Windows MSIX packaging target with webcam capability and replaceable Partner Center identity
 - Privacy policy, EULA, proprietary licence, support URL, and listing copy
 - No analytics, advertisements, accounts, or cloud collection
 
@@ -22,5 +23,6 @@ The permanent Android package ID and Apple bundle ID are confirmed as `com.kingc
 6. Capture current phone/tablet screenshots and complete content rating, age rating, accessibility, and export-compliance questionnaires.
 7. Test on several real devices, including camera denial, camera re-grant, imported transparent and non-transparent artwork, rotation, interruptions, and low-memory recovery.
 8. Set a paid price in each store. Do not add external purchase links inside the mobile app.
+9. In Microsoft Partner Center, reserve **Avatar Forge**, then replace the temporary MSIX `identityName` and publisher values with the exact values shown under **Product identity** before the Store submission build.
 
 Before every submission, re-check current target-SDK, privacy-manifest, and review-policy requirements.
