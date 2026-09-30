@@ -3,7 +3,8 @@ import { FaceLandmarker, FilesetResolver } from "./vendor/vision_bundle.mjs";
 const $ = (selector) => document.querySelector(selector);
 const refs = {
   file: $("#file"), upload: $("#upload"), art: $("#art"), avatar: $("#avatar"), camera: $("#camera"), toggle: $("#toggle"),
-  status: $("#status"), statusDot: $("#statusDot"), left: $("#leftLid"), right: $("#rightLid"), mouth: $("#mouth"), name: $("#name"), toast: $("#toast")
+  status: $("#status"), statusDot: $("#statusDot"), left: $("#leftLid"), right: $("#rightLid"), mouth: $("#mouth"), name: $("#name"), toast: $("#toast"),
+  aiCard: $(".ai-card"), aiPrompt: $("#aiPrompt"), aiStyle: $("#aiStyle"), aiQuality: $("#aiQuality"), aiKey: $("#aiKey"), aiKeyRow: $("#aiKeyRow"), aiStatus: $("#aiStatus"), generateAi: $("#generateAi"), downloadPng: $("#downloadPng")
 };
 const ranges = { background: $("#background"), head: $("#head"), blink: $("#blink"), mouth: $("#mouthRange"), smoothing: $("#smoothing") };
 let imageData = refs.art.src, frame = 0, stream, tracker, lastVideoTime = -1, sourceFile, backgroundTimer;
@@ -20,6 +21,84 @@ refs.file.addEventListener("change", async () => {
   refs.name.value = sourceFile.name.replace(/\.[^.]+$/, "");
   await processAvatar(sourceFile);
 });
+
+const capacitorAi = window.Capacitor?.Plugins?.AvatarForgeAI;
+const aiBridge = window.avatarForgeAI || (capacitorAi ? {
+  getKeyState: () => capacitorAi.getKeyState(),
+  saveKey: (key) => capacitorAi.saveKey({ key }),
+  clearKey: () => capacitorAi.clearKey(),
+  generate: (options) => capacitorAi.generate(options)
+} : undefined);
+let aiKeyConfigured = false;
+const removeAiKey = document.createElement("button");
+removeAiKey.textContent = "Remove"; removeAiKey.hidden = true; refs.aiKeyRow.append(removeAiKey);
+const aiKeyHelp = document.createElement("a");
+aiKeyHelp.className = "ai-key-help"; aiKeyHelp.href = "https://platform.openai.com/api-keys"; aiKeyHelp.target = "_blank"; aiKeyHelp.rel = "noreferrer"; aiKeyHelp.textContent = "Get an OpenAI API key";
+refs.aiCard.insertBefore(aiKeyHelp, refs.aiStatus);
+
+async function refreshAiKeyState() {
+  if (!aiBridge) {
+    refs.generateAi.disabled = true;
+    refs.aiKeyRow.hidden = true;
+    refs.aiStatus.textContent = "AI creation is not available on this device yet.";
+    return;
+  }
+  const state = await aiBridge.getKeyState();
+  aiKeyConfigured = state.configured;
+  removeAiKey.hidden = !state.configured;
+  refs.aiKeyRow.hidden = state.configured;
+  refs.aiStatus.textContent = state.configured
+    ? `API key ready${state.persistent ? " and encrypted on this computer" : " for this session"}. Each image uses your OpenAI API account.`
+    : "Add your own OpenAI API key. It is sent only to OpenAI for image generation.";
+}
+
+$("#saveAiKey").addEventListener("click", async () => {
+  try {
+    const state = await aiBridge.saveKey(refs.aiKey.value);
+    refs.aiKey.value = ""; aiKeyConfigured = true; removeAiKey.hidden = false; refs.aiKeyRow.hidden = true;
+    refs.aiStatus.textContent = state.persistent ? "API key saved with Windows encryption." : "API key saved for this session only.";
+    showToast("AI key saved securely");
+  } catch (error) { refs.aiStatus.textContent = error.message; }
+});
+
+$("#aiKeySettings").addEventListener("click", async () => {
+  if (!aiBridge) return;
+  if (aiKeyConfigured && refs.aiKeyRow.hidden) {
+    refs.aiKeyRow.hidden = false; refs.aiKey.placeholder = "Enter a replacement key"; $("#saveAiKey").textContent = "Replace"; refs.aiKey.focus();
+  } else { refs.aiKeyRow.hidden = !refs.aiKeyRow.hidden; }
+});
+
+removeAiKey.addEventListener("click", async () => {
+  if (!aiBridge) return;
+  await aiBridge.clearKey(); aiKeyConfigured = false; removeAiKey.hidden = true; refs.aiKey.value = ""; refs.aiKey.placeholder = "OpenAI API key"; $("#saveAiKey").textContent = "Save key";
+  refs.aiStatus.textContent = "Saved API key removed."; showToast("AI key removed");
+});
+
+refs.generateAi.addEventListener("click", async () => {
+  if (!aiBridge) return;
+  if (!aiKeyConfigured) { refs.aiKeyRow.hidden = false; refs.aiKey.focus(); refs.aiStatus.textContent = "Add an API key first."; return; }
+  const description = refs.aiPrompt.value.trim();
+  if (description.length < 8) { refs.aiStatus.textContent = "Describe your avatar in a little more detail."; refs.aiPrompt.focus(); return; }
+  refs.aiCard.classList.add("generating"); refs.status.textContent = "AI is creating a transparent PNG…"; refs.aiStatus.textContent = "Generating—complex avatars can take up to two minutes.";
+  try {
+    const result = await aiBridge.generate({ description, style: refs.aiStyle.value, quality: refs.aiQuality.value });
+    if (!result.ok) throw new Error(result.error);
+    imageData = result.imageData; sourceFile = undefined; refs.art.src = imageData;
+    refs.name.value = description.slice(0, 52); refs.downloadPng.disabled = false;
+    refs.status.textContent = "AI transparent PNG ready"; refs.aiStatus.textContent = "Ready—transparent PNG imported into the live avatar rig."; showToast("AI avatar created and imported");
+  } catch (error) {
+    refs.status.textContent = "AI generation unavailable"; refs.aiStatus.textContent = error.message || "Avatar generation failed."; showToast("Could not create the avatar");
+  } finally { refs.aiCard.classList.remove("generating"); }
+});
+
+refs.downloadPng.addEventListener("click", () => {
+  if (!imageData.startsWith("data:image/png")) return;
+  const anchor = document.createElement("a"); anchor.href = imageData;
+  anchor.download = `${(refs.name.value || "ai-avatar").replace(/[^a-z0-9-_]+/gi, "-").toLowerCase()}-transparent.png`; anchor.click();
+  showToast("Transparent PNG downloaded");
+});
+
+refreshAiKeyState().catch((error) => { refs.aiStatus.textContent = `AI setup unavailable: ${error.message}`; });
 
 function colorDistance(data, offset, background) {
   return Math.hypot(data[offset] - background.r, data[offset + 1] - background.g, data[offset + 2] - background.b);

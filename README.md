@@ -12,6 +12,8 @@ Windows may show a SmartScreen warning because this community tester build is no
 
 - Local webcam face tracking
 - Automatic conversion to transparent PNG on upload
+- Optional AI Avatar Creator that generates rig-ready transparent PNGs
+- User-supplied OpenAI API key stored with Windows encryption
 - Adjustable background-removal strength with feathered edges
 - Head movement, blink, mouth, and smoothing controls
 - Local avatar settings
@@ -51,5 +53,7 @@ Open the Android project with `pnpm mobile:android` or the iOS project on macOS 
 The Android project targets API 36. A signed Google Play App Bundle requires a private upload key. The iOS project requires macOS, Xcode, an Apple Developer team, and signing before TestFlight or App Store submission.
 
 The desktop studio bundles its tracking model locally. Exported OBS overlays load the tracking runtime from the internet.
+
+The optional AI Avatar Creator uses the OpenAI Image API on Windows and Android. Users provide their own API key and are responsible for charges on their API account. Prompts are sent only when **Create PNG** is pressed; webcam frames and uploaded artwork are never included. Windows uses operating-system encryption and Android uses Android Keystore encryption for saved keys. AI creation is currently disabled in the iOS edition until a secure native bridge is configured.
 
 See [STORE_RELEASE_CHECKLIST.md](STORE_RELEASE_CHECKLIST.md), [PRIVACY.md](PRIVACY.md), and [EULA.md](EULA.md) before publication.

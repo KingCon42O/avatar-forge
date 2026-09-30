@@ -11,7 +11,8 @@ The permanent Android package ID and Apple bundle ID are confirmed as `com.kingc
 - Store icon master and generated platform icon sets
 - Windows MSIX packaging target with webcam capability and replaceable Partner Center identity
 - Privacy policy, EULA, proprietary licence, support URL, and listing copy
-- No analytics, advertisements, accounts, or cloud collection
+- No analytics, advertisements, Avatar Forge accounts, or developer-operated cloud collection
+- Optional Windows AI generation disclosure: prompts go directly to OpenAI using the user's API key; camera frames and imported artwork are excluded
 
 ## Publisher must complete
 

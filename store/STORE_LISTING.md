@@ -21,6 +21,8 @@ Tune movement and smoothing controls, save your setup locally, and use the deskt
 
 Privacy first: face tracking runs on your device. Camera video is not uploaded or recorded, no account is required, and this release contains no advertising or analytics.
 
+The Windows and Android editions also include optional AI avatar creation for transparent PNG artwork. It uses the user's own OpenAI API key; prompts are sent to OpenAI only after the user starts generation, and camera video is never included.
+
 ## Search terms
 
 avatar, vtuber, face tracking, webcam, livestream, streaming, OBS, virtual camera
@@ -33,4 +35,4 @@ avatar, vtuber, face tracking, webcam, livestream, streaming, OBS, virtual camer
 - User artwork/settings: stored locally on device
 - Advertising/analytics SDKs: none
 
-Re-check these declarations if analytics, accounts, cloud sync, advertising, payments, or crash-reporting SDKs are added.
+Re-check these declarations if analytics, Avatar Forge accounts, cloud sync, advertising, payments, or crash-reporting SDKs are added. Store privacy forms must disclose the optional user-initiated OpenAI prompt transfer in the Windows edition.
