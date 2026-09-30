@@ -1,5 +1,11 @@
 apply plugin: 'com.android.application'
 
+def releaseSigningReady = [
+    'AVATAR_FORGE_UPLOAD_KEYSTORE',
+    'AVATAR_FORGE_UPLOAD_PASSWORD',
+    'AVATAR_FORGE_UPLOAD_ALIAS'
+].every { System.getenv(it) }
+
 android {
     namespace = "com.kingcon42o.avatarforge"
     compileSdk = rootProject.ext.compileSdkVersion
@@ -16,8 +22,21 @@ android {
             ignoreAssetsPattern = '!.svn:!.git:!.ds_store:!*.scc:.*:!CVS:!thumbs.db:!picasa.ini:!*~'
         }
     }
+    signingConfigs {
+        release {
+            if (releaseSigningReady) {
+                storeFile file(System.getenv('AVATAR_FORGE_UPLOAD_KEYSTORE'))
+                storePassword System.getenv('AVATAR_FORGE_UPLOAD_PASSWORD')
+                keyAlias System.getenv('AVATAR_FORGE_UPLOAD_ALIAS')
+                keyPassword System.getenv('AVATAR_FORGE_UPLOAD_PASSWORD')
+            }
+        }
+    }
     buildTypes {
         release {
+            if (releaseSigningReady) {
+                signingConfig signingConfigs.release
+            }
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
