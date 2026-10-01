@@ -1,6 +1,6 @@
 {
   "name": "avatar-forge-desktop",
-  "version": "0.5.0",
+  "version": "0.5.1",
   "private": true,
   "description": "Portable webcam-tracked avatar studio for OBS and Streamlabs",
   "author": "KingCon42O",
@@ -10,6 +10,7 @@
     "package": "electron-packager . \"Avatar Forge\" --platform=win32 --arch=x64 --out=release --overwrite --asar.unpackDir=native/windows --ignore=^/release$ --ignore=^/release-msix$ --ignore=^/android$ --ignore=^/ios$ --ignore=^/assets$ --ignore=^/store$ --ignore=^/third_party$ --ignore=^/node_modules$ --ignore=^/\\.git$",
     "package:msix": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/build-msix.ps1",
     "test:ai": "node scripts/test-local-ai.cjs",
+    "test:rig": "node scripts/test-feature-rig.cjs",
     "mobile:sync": "cap sync",
     "mobile:android": "cap open android",
     "mobile:ios": "cap open ios",

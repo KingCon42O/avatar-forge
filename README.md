@@ -16,6 +16,7 @@ Windows may show a SmartScreen warning because this community tester build is no
 - No API key, account, subscription, or per-image fee
 - Adjustable background-removal strength with feathered edges
 - Head movement, blink, mouth, and smoothing controls
+- Independent left-eye, right-eye, and mouth position, width, height, and roundness controls
 - Local avatar settings
 - Transparent OBS and Streamlabs browser-source export
 - No account required inside the desktop app
