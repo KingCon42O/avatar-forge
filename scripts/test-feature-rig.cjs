@@ -18,4 +18,7 @@ assert.match(script, /JSON\.stringify\(\{ image: imageData, rig: rig\(\) \}\)/, 
 assert.match(script, /F\(l,'leftEye'/, "Overlay must position the left eye");
 assert.match(script, /F\(r,'rightEye'/, "Overlay must position the right eye");
 assert.match(script, /F\(m,'mouth'/, "Overlay must position the mouth");
+assert.match(script, /bindFeatureDrag\(refs\.left, "leftEye"\)/, "Left eye must support direct dragging");
+assert.match(script, /bindFeatureDrag\(refs\.right, "rightEye"\)/, "Right eye must support direct dragging");
+assert.match(script, /bindFeatureDrag\(refs\.mouth, "mouth"\)/, "Mouth must support direct dragging");
 console.log("Independent feature rig contract passed.");

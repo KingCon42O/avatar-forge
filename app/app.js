@@ -3,7 +3,7 @@ import { FaceLandmarker, FilesetResolver } from "./vendor/vision_bundle.mjs";
 const $ = (selector) => document.querySelector(selector);
 const refs = {
   file: $("#file"), upload: $("#upload"), art: $("#art"), avatar: $("#avatar"), camera: $("#camera"), toggle: $("#toggle"),
-  status: $("#status"), statusDot: $("#statusDot"), left: $("#leftLid"), right: $("#rightLid"), mouth: $("#mouth"), name: $("#name"), toast: $("#toast"),
+  status: $("#status"), statusDot: $("#statusDot"), left: $("#leftLid"), right: $("#rightLid"), mouth: $("#mouth"), arrange: $("#arrangeFeatures"), name: $("#name"), toast: $("#toast"),
   aiCard: $(".ai-card"), aiPrompt: $("#aiPrompt"), aiStyle: $("#aiStyle"), aiQuality: $("#aiQuality"), aiStatus: $("#aiStatus"), generateAi: $("#generateAi"), downloadPng: $("#downloadPng")
 };
 const ranges = {
@@ -14,6 +14,7 @@ const ranges = {
 };
 const featureDefaults = { leftEyeX: 41, leftEyeY: 41, leftEyeWidth: 9, leftEyeHeight: 4, leftEyeShape: 100, rightEyeX: 59, rightEyeY: 41, rightEyeWidth: 9, rightEyeHeight: 4, rightEyeShape: 100, mouthX: 50, mouthY: 62, mouthWidth: 8, mouthHeight: 7, mouthShape: 100 };
 let featurePreviewTimer;
+let arrangingFeatures = false;
 let imageData = refs.art.src, frame = 0, stream, tracker, lastVideoTime = -1, sourceFile, backgroundTimer;
 let current = { x: 0, y: 0, rotation: 0, scale: 1, jaw: 0, blinkL: 0, blinkR: 0 };
 
@@ -33,10 +34,36 @@ function previewFeature(key) {
   element.classList.add("feature-preview"); clearTimeout(featurePreviewTimer);
   featurePreviewTimer = setTimeout(() => { element.classList.remove("feature-preview"); render(current); }, 900);
 }
-function syncRanges() { for (const [key, input] of Object.entries(ranges)) { $(`#${key}Out`).textContent = `${input.value}%`; input.oninput = () => { $(`#${key}Out`).textContent = `${input.value}%`; if (key in featureDefaults) { applyFeatureLayout(); previewFeature(key); } }; } }
+function syncRanges() { for (const [key, input] of Object.entries(ranges)) { const output = $(`#${key}Out`); if (output) output.textContent = `${input.value}%`; input.oninput = () => { if (output) output.textContent = `${input.value}%`; if (key in featureDefaults) { applyFeatureLayout(); previewFeature(key); } }; } }
 syncRanges();
 applyFeatureLayout();
 $("#resetFeatures").addEventListener("click", () => { for (const [key, value] of Object.entries(featureDefaults)) ranges[key].value = value; syncRanges(); applyFeatureLayout(); showToast("Feature placement reset"); });
+
+function setArrangeMode(enabled) {
+  arrangingFeatures = enabled;
+  if (enabled && stream) stopCamera();
+  refs.avatar.classList.toggle("arranging", enabled); refs.arrange.classList.toggle("active", enabled);
+  refs.arrange.textContent = enabled ? "✓ Done arranging" : "✥ Arrange face";
+  refs.status.textContent = enabled ? "Drag either eye or the mouth directly on the avatar" : "Preview ready";
+  if (!enabled) { refs.left.classList.remove("dragging"); refs.right.classList.remove("dragging"); refs.mouth.classList.remove("dragging"); render(current); }
+}
+
+function bindFeatureDrag(element, prefix) {
+  let pointerId;
+  const move = (event) => {
+    if (!arrangingFeatures || event.pointerId !== pointerId) return;
+    const bounds = refs.avatar.getBoundingClientRect();
+    ranges[`${prefix}X`].value = Math.round(Math.max(0, Math.min(100, (event.clientX - bounds.left) / bounds.width * 100)));
+    ranges[`${prefix}Y`].value = Math.round(Math.max(0, Math.min(100, (event.clientY - bounds.top) / bounds.height * 100)));
+    applyFeatureLayout(); refs.status.textContent = `${element.getAttribute("aria-label")}: ${ranges[`${prefix}X`].value}% across, ${ranges[`${prefix}Y`].value}% down`;
+  };
+  element.addEventListener("pointerdown", (event) => { if (!arrangingFeatures) return; event.preventDefault(); pointerId = event.pointerId; element.setPointerCapture(pointerId); element.classList.add("dragging"); move(event); });
+  element.addEventListener("pointermove", move);
+  const finish = (event) => { if (event.pointerId !== pointerId) return; element.classList.remove("dragging"); pointerId = undefined; refs.status.textContent = "Drag another feature or press Done arranging"; };
+  element.addEventListener("pointerup", finish); element.addEventListener("pointercancel", finish);
+}
+bindFeatureDrag(refs.left, "leftEye"); bindFeatureDrag(refs.right, "rightEye"); bindFeatureDrag(refs.mouth, "mouth");
+refs.arrange.addEventListener("click", () => setArrangeMode(!arrangingFeatures));
 
 refs.upload.addEventListener("click", () => refs.file.click());
 refs.file.addEventListener("change", async () => {
@@ -190,6 +217,7 @@ function render(value) {
 
 async function startCamera() {
   if (stream) { stopCamera(); return; }
+  if (arrangingFeatures) setArrangeMode(false);
   try {
     await prepareTracker();
     stream = await navigator.mediaDevices.getUserMedia({ video: { width: 1280, height: 720, facingMode: "user" }, audio: false });
