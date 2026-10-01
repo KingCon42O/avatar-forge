@@ -18,6 +18,7 @@ Windows may show a SmartScreen warning because this community tester build is no
 - Head movement, blink, mouth, and smoothing controls
 - Mouse, touchscreen, or stylus dragging for independent left-eye, right-eye, and mouth placement
 - Independent width, height, and roundness controls for each facial feature
+- Optional eye-size matching that keeps both eye positions independently draggable
 - Local avatar settings
 - Transparent OBS and Streamlabs browser-source export
 - No account required inside the desktop app

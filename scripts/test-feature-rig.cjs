@@ -21,4 +21,6 @@ assert.match(script, /F\(m,'mouth'/, "Overlay must position the mouth");
 assert.match(script, /bindFeatureDrag\(refs\.left, "leftEye"\)/, "Left eye must support direct dragging");
 assert.match(script, /bindFeatureDrag\(refs\.right, "rightEye"\)/, "Right eye must support direct dragging");
 assert.match(script, /bindFeatureDrag\(refs\.mouth, "mouth"\)/, "Mouth must support direct dragging");
+assert.match(html, /id="matchEyes"/, "Missing match-eye-size control");
+assert.match(script, /rightEye\$\{property\}/, "Eye matching must synchronize dimensions");
 console.log("Independent feature rig contract passed.");

@@ -3,7 +3,7 @@ import { FaceLandmarker, FilesetResolver } from "./vendor/vision_bundle.mjs";
 const $ = (selector) => document.querySelector(selector);
 const refs = {
   file: $("#file"), upload: $("#upload"), art: $("#art"), avatar: $("#avatar"), camera: $("#camera"), toggle: $("#toggle"),
-  status: $("#status"), statusDot: $("#statusDot"), left: $("#leftLid"), right: $("#rightLid"), mouth: $("#mouth"), arrange: $("#arrangeFeatures"), name: $("#name"), toast: $("#toast"),
+  status: $("#status"), statusDot: $("#statusDot"), left: $("#leftLid"), right: $("#rightLid"), mouth: $("#mouth"), arrange: $("#arrangeFeatures"), matchEyes: $("#matchEyes"), name: $("#name"), toast: $("#toast"),
   aiCard: $(".ai-card"), aiPrompt: $("#aiPrompt"), aiStyle: $("#aiStyle"), aiQuality: $("#aiQuality"), aiStatus: $("#aiStatus"), generateAi: $("#generateAi"), downloadPng: $("#downloadPng")
 };
 const ranges = {
@@ -18,7 +18,7 @@ let arrangingFeatures = false;
 let imageData = refs.art.src, frame = 0, stream, tracker, lastVideoTime = -1, sourceFile, backgroundTimer;
 let current = { x: 0, y: 0, rotation: 0, scale: 1, jaw: 0, blinkL: 0, blinkR: 0 };
 
-function rig() { return Object.fromEntries(Object.entries(ranges).map(([key, input]) => [key, Number(input.value)])); }
+function rig() { return { ...Object.fromEntries(Object.entries(ranges).map(([key, input]) => [key, Number(input.value)])), matchEyes: refs.matchEyes.checked ? 1 : 0 }; }
 function showToast(message) { refs.toast.textContent = message; refs.toast.classList.add("show"); setTimeout(() => refs.toast.classList.remove("show"), 2200); }
 function applyFeatureLayout() {
   const value = rig(), apply = (element, prefix) => {
@@ -34,9 +34,10 @@ function previewFeature(key) {
   element.classList.add("feature-preview"); clearTimeout(featurePreviewTimer);
   featurePreviewTimer = setTimeout(() => { element.classList.remove("feature-preview"); render(current); }, 900);
 }
-function syncRanges() { for (const [key, input] of Object.entries(ranges)) { const output = $(`#${key}Out`); if (output) output.textContent = `${input.value}%`; input.oninput = () => { if (output) output.textContent = `${input.value}%`; if (key in featureDefaults) { applyFeatureLayout(); previewFeature(key); } }; } }
+function syncRanges() { for (const [key, input] of Object.entries(ranges)) { const output = $(`#${key}Out`); if (output) output.textContent = `${input.value}%`; input.oninput = () => { if (output) output.textContent = `${input.value}%`; if (refs.matchEyes.checked && /^(left|right)Eye(Width|Height|Shape)$/.test(key)) { const twinKey = key.startsWith("left") ? key.replace("left", "right") : key.replace("right", "left"), twinOutput = $(`#${twinKey}Out`); ranges[twinKey].value = input.value; if (twinOutput) twinOutput.textContent = `${input.value}%`; } if (key in featureDefaults) { applyFeatureLayout(); previewFeature(key); } }; } }
 syncRanges();
 applyFeatureLayout();
+refs.matchEyes.addEventListener("change", () => { if (refs.matchEyes.checked) { for (const property of ["Width", "Height", "Shape"]) ranges[`rightEye${property}`].value = ranges[`leftEye${property}`].value; syncRanges(); applyFeatureLayout(); showToast("Eye size and shape matched"); } });
 $("#resetFeatures").addEventListener("click", () => { for (const [key, value] of Object.entries(featureDefaults)) ranges[key].value = value; syncRanges(); applyFeatureLayout(); showToast("Feature placement reset"); });
 
 function setArrangeMode(enabled) {
@@ -245,7 +246,7 @@ function saveAvatar() {
   localStorage.setItem("avatar-forge-profile", JSON.stringify({ name: refs.name.value, image: imageData, rig: rig() })); showToast("Avatar saved on this computer");
 }
 $("#save").addEventListener("click", saveAvatar);
-try { const saved = JSON.parse(localStorage.getItem("avatar-forge-profile")); if (saved) { refs.name.value = saved.name; imageData = saved.image; refs.art.src = imageData; for (const key of Object.keys(ranges)) if (saved.rig[key] !== undefined) ranges[key].value = saved.rig[key]; syncRanges(); applyFeatureLayout(); } } catch {}
+try { const saved = JSON.parse(localStorage.getItem("avatar-forge-profile")); if (saved) { refs.name.value = saved.name; imageData = saved.image; refs.art.src = imageData; for (const key of Object.keys(ranges)) if (saved.rig[key] !== undefined) ranges[key].value = saved.rig[key]; refs.matchEyes.checked = Boolean(saved.rig.matchEyes); syncRanges(); applyFeatureLayout(); } } catch {}
 
 function overlayHtml() {
   const config = JSON.stringify({ image: imageData, rig: rig() }).replaceAll("<", "\\u003c");
