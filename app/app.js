@@ -74,6 +74,8 @@ refs.file.addEventListener("change", async () => {
 });
 
 const capacitorAi = window.Capacitor?.Plugins?.AvatarForgeAI;
+const nativePlatform = window.Capacitor?.getPlatform?.() || "web";
+document.documentElement.classList.toggle("ios", nativePlatform === "ios");
 const aiBridge = window.avatarForgeAI || (capacitorAi ? {
   getState: () => capacitorAi.getState(),
   install: () => capacitorAi.install(),
@@ -85,7 +87,7 @@ let aiInstalled = false;
 async function refreshAiState() {
   if (!aiBridge) {
     refs.generateAi.disabled = true;
-    refs.aiStatus.textContent = "AI creation is not available on this device yet.";
+    refs.aiStatus.textContent = nativePlatform === "ios" ? "On iPhone, choose or create artwork with another app, then import it above. Local AI generation is not included yet." : "AI creation is not available on this device yet.";
     return;
   }
   const state = await aiBridge.getState(); aiInstalled = state.installed;
@@ -260,3 +262,4 @@ function downloadOverlay() {
 $("#download").addEventListener("click", downloadOverlay); $("#downloadSide").addEventListener("click", downloadOverlay);
 $("#copy").addEventListener("click", async () => { await navigator.clipboard.writeText("Add a Browser Source in OBS or Streamlabs. Enable Local file, choose the downloaded avatar overlay HTML, and set Width 1920 / Height 1080. Allow camera access and keep the background transparent."); showToast("OBS setup copied"); });
 window.addEventListener("beforeunload", stopCamera);
+document.addEventListener("visibilitychange", () => { if (document.hidden && stream) stopCamera(); });

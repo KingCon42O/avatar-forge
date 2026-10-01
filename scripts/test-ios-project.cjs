@@ -1,0 +1,18 @@
+const assert = require("node:assert/strict");
+const fs = require("node:fs");
+const path = require("node:path");
+const root = path.join(__dirname, "..");
+const read = (...parts) => fs.readFileSync(path.join(root, ...parts), "utf8");
+const plist = read("ios", "App", "App", "Info.plist");
+const project = read("ios", "App", "App.xcodeproj", "project.pbxproj");
+const mobile = read("app", "mobile.css");
+assert.match(plist, /NSCameraUsageDescription/, "iPhone camera permission description is required");
+assert.match(plist, /NSPhotoLibraryUsageDescription/, "iPhone photo permission description is required");
+assert.doesNotMatch(plist, /<string>armv7<\/string>/, "Obsolete ARMv7 capability must not be required");
+assert.match(plist, /ITSAppUsesNonExemptEncryption[\s\S]*?<false\/>/, "Export compliance declaration is required");
+assert.match(project, /PRODUCT_BUNDLE_IDENTIFIER = com\.kingcon42o\.avatarforge;/, "Permanent iPhone bundle identifier changed");
+assert.match(project, /IPHONEOS_DEPLOYMENT_TARGET = 15\.0;/, "iOS 15 deployment target is required by Capacitor 8");
+assert.match(project, /MARKETING_VERSION = 0\.6\.0;/, "iPhone marketing version is stale");
+assert.match(mobile, /safe-area-inset-top/, "iPhone safe-area layout is missing");
+assert.match(mobile, /min-height: 44px/, "Touch targets must be at least 44 points high");
+console.log("iPhone project contract passed.");

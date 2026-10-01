@@ -1,6 +1,6 @@
 {
   "name": "avatar-forge-desktop",
-  "version": "0.5.3",
+  "version": "0.6.0",
   "private": true,
   "description": "Portable webcam-tracked avatar studio for OBS and Streamlabs",
   "author": "KingCon42O",
@@ -11,6 +11,7 @@
     "package:msix": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/build-msix.ps1",
     "test:ai": "node scripts/test-local-ai.cjs",
     "test:rig": "node scripts/test-feature-rig.cjs",
+    "test:ios": "node scripts/test-ios-project.cjs",
     "mobile:sync": "cap sync",
     "mobile:android": "cap open android",
     "mobile:ios": "cap open ios",

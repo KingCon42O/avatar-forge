@@ -22,6 +22,10 @@
   .brand strong { font-size: 14px; }
   .brand small { font-size: 9px; }
   .center { grid-template-rows: 26px minmax(320px, 54vh) 60px; }
-  .transport { gap: 9px; }
-  .transport span { max-width: 135px; }
+  .transport { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .transport button { min-height: 44px; padding: 8px; }
+  .transport span { grid-column: 1 / -1; max-width: none; text-align: center; }
+  .stage { min-height: 310px; }
+  .feature-editor summary { min-height: 44px; display: flex; align-items: center; }
+  .feature-editor input[type=range] { min-height: 30px; }
 }

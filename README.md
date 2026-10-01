@@ -1,6 +1,6 @@
 # Avatar Forge
 
-Avatar Forge is a private, webcam-tracked 2D avatar studio for Windows, Android, and iOS. Upload an avatar image, automatically remove its background, map head movement, blinking, and mouth movement, and use the desktop edition to export a transparent HTML overlay for OBS or Streamlabs.
+Avatar Forge is a private, webcam-tracked 2D avatar studio for Windows, Android, iPhone, and iPad. Upload an avatar image, automatically remove its background, map head movement, blinking, and mouth movement, and use the desktop edition to export a transparent HTML overlay for OBS or Streamlabs.
 
 ## Download
 
@@ -23,6 +23,7 @@ Windows may show a SmartScreen warning because this community tester build is no
 - Transparent OBS and Streamlabs browser-source export
 - No account required inside the desktop app
 - Native Android and iOS projects with on-device processing
+- iPhone touch layout, safe-area support, camera lifecycle handling, and an Xcode/TestFlight build guide
 - Store privacy policy, permission disclosures, app icon, listing copy, and release checklist
 
 ## Development
